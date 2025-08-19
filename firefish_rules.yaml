@@ -1,0 +1,65 @@
+rules:
+  # 1. Allow DNS (needed for internet browsing)
+  - action: ALLOW
+    direction: OUT
+    proto: UDP
+    dst_port: 53
+    label: Allow_DNS
+
+  # 2. Allow web browsing (HTTP + HTTPS)
+  - action: ALLOW
+    direction: OUT
+    proto: TCP
+    dst_port: 80
+    label: Allow_HTTP
+
+  - action: ALLOW
+    direction: OUT
+    proto: TCP
+    dst_port: 443
+    label: Allow_HTTPS
+
+  # 3. Allow loopback (apps inside your PC talk to each other safely)
+  - action: ALLOW
+    direction: BOTH
+    proto: ANY
+    src_ip: 127.0.0.1
+    dst_ip: 127.0.0.1
+    label: Allow_Loopback
+
+  # 4. Block new incoming traffic (hackers scanning your system)
+  - action: DENY
+    direction: IN
+    proto: ANY
+    label: Block_New_Incoming
+
+  # 5. Block common malware/backdoor ports
+  - action: DENY
+    direction: IN
+    proto: TCP
+    dst_port: 23
+    label: Block_Telnet
+
+  - action: DENY
+    direction: IN
+    proto: TCP
+    dst_port: 3389
+    label: Block_RDP
+
+  - action: DENY
+    direction: IN
+    proto: TCP
+    dst_port: 445
+    label: Block_SMB
+
+  # 6. Block ICMP ping flood (optional, attackers use this to scan)
+  - action: DENY
+    direction: IN
+    proto: ICMP
+    label: Block_ICMP_Ping
+
+  # 7. LOG all denied packets (super important for auditing)
+  - action: LOG
+    direction: BOTH
+    proto: ANY
+    label: Log_Denied
