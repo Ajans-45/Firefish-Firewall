@@ -43,64 +43,74 @@ sudo python firefish.py --iface eth0 --enforce
 Use a specific rules file:
 ```bash
 sudo python firefish.py --config /path/to/my_rules.yaml --iface wlan0 --enforce
+```
 
 Launch the GUI:
 ```bash
 sudo python firefish.py --iface eth0 --gui
-
+```
 
 📜 Rules File Format (YAML)
 
 Example firefish_rules.yaml:
 
-# Default policy if no rules match
+# Firewall Rules Configuration
+
+## Default Policy
+```yaml
 default_policy: ALLOW   # or DENY
 
-rules:
-  - action: DENY
-    direction: IN       # IN | OUT | BOTH
-    proto: TCP          # TCP | UDP | ICMP | ANY
-    src_ip: ANY
-    dst_ip: 192.168.1.100
-    dst_port: 22        # block inbound SSH to this host
-
-  - action: DENY
-    direction: OUT
-    proto: UDP
-    dst_port: 53        # block outbound DNS
-
-  - action: ALLOW
-    direction: BOTH
-    proto: ANY
-    dst_ip: 8.8.8.8
-    dst_port: 443       # allow traffic to Google DNS over HTTPS
-
-  - action: DENY
-    direction: BOTH
-    proto: ANY
-    src_ip: 10.0.0.0/8  # block private source subnet
-
-  - action: ALLOW
-    direction: IN
-    proto: TCP
-    dst_port: 3389
-    label: SUSPICIOUS   # suspicious criteria → logged at WARNING level
 
 👉 Order matters: First matching rule applies. If no rule matches, the default policy applies.
+Rules
+1. Block Inbound SSH
+- action: DENY
+  direction: IN       # IN | OUT | BOTH
+  proto: TCP          # TCP | UDP | ICMP | ANY
+  src_ip: ANY
+  dst_ip: 192.168.1.100
+  dst_port: 22        # block inbound SSH to this host
+
+2. Block Outbound DNS
+- action: DENY
+  direction: OUT
+  proto: UDP
+  dst_port: 53        # block outbound DNS
+
+3. Allow Traffic to Google DNS over HTTPS
+- action: ALLOW
+  direction: BOTH
+  proto: ANY
+  dst_ip: 8.8.8.8
+  dst_port: 443       # allow traffic to Google DNS over HTTPS
+
+4. Block Private Source Subnet
+- action: DENY
+  direction: BOTH
+  proto: ANY
+  src_ip: 10.0.0.0/8  # block private source subnet
+
+5. Allow Inbound RDP (Suspicious)
+- action: ALLOW
+  direction: IN
+  proto: TCP
+  dst_port: 3389
+  label: SUSPICIOUS   # suspicious criteria → logged at WARNING level
+```
 
 🛠️ Installation
 Clone the repo:
 ```bash
 git clone https://github.com/<your-username>/firefish-firewall.git
 cd firefish-firewall
-
+```
 Make scripts executable:
 ```bash
 chmod +x scripts/start_firefish.sh scripts/stop_firefish.sh
-
+```
 ▶️ Usage (Scripts)
 Start Firefish
-```bash
+```
 ./scripts/start_firefish.sh
 ```
 ✅ Disables UFW (if running) and starts Firefish.
