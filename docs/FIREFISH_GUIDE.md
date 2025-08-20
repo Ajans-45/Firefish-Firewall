@@ -25,44 +25,44 @@ Every time your computer sends/receives something on the network, it’s a **pac
 - Linux (Ubuntu, Kali, Pop!_OS, etc.)  
 - Python **3.8+**  
 - Root (sudo) access  
-- Python packages:  
-  ```bash
+- Python packages:
+```bash
   sudo pip install scapy pyyaml
-📝 Step 1 — Get Your Network Interface Name
+  ```
+### 📝**Step 1**— Get Your Network Interface Name
 Check your network card name (Wi-Fi/Ethernet):
 
-bash
-Copy code
-ip -br a
+```bash
+
+    ip -br a
+```
 Pick the one that’s UP and has your IP (e.g., wlan0 for Wi-Fi, eth0 for Ethernet).
 
-👀 Step 2 — Run Firefish in “Monitor Only” Mode (Safe)
+### 👀 **Step 2** — Run Firefish in “Monitor Only” Mode (Safe)
 This just watches and logs—no blocking.
 
-bash
-Copy code
+```bash
 sudo python firefish.py --iface wlan0
+```
 You’ll see logs like:
-
-rust
-Copy code
+```
 INFO TCP 192.168.1.50:54321 -> 142.250.183.206:443 => ALLOW
-👉 Logs are saved in firefish.log (rotating).
+```
+👉 **Logs are saved in firefish.log (rotating).**
 
 Live view:
 
-bash
-Copy code
+```bash
 tail -f firefish.log
-📜 Step 3 — Understand the Rule File
-Rules are stored in firefish_rules.yaml (auto-created if missing).
-Rules are checked top to bottom → first match wins.
-
-If no match: default_policy is applied.
+```
+### 📜 **Step 3** — Understand the Rule File
+  - Rules are stored in firefish_rules.yaml (auto-created if missing).
+  - Rules are checked top to bottom → first match wins.
+  - If no match: default_policy is applied.
 
 Example:
-yaml
-Copy code
+```yaml
+
 default_policy: ALLOW
 
 rules:
@@ -82,74 +82,76 @@ rules:
     proto: ANY
     dst_ip: 8.8.8.8
     dst_port: 443         # Allow to 8.8.8.8:443
-👉 Fields:
+```
+#### 👉 **Fields:**
 
-action: ALLOW / DENY
+  - action: ALLOW / DENY
 
-direction: IN / OUT / BOTH
+  - direction: IN / OUT / BOTH
 
-proto: TCP, UDP, ICMP, ANY
+  - proto: TCP, UDP, ICMP, ANY
 
-src_ip / dst_ip: ANY, IP (1.2.3.4), or CIDR (192.168.1.0/24)
+  - src_ip / dst_ip: ANY, IP (1.2.3.4), or CIDR (192.168.1.0/24)
 
-src_port / dst_port: ANY, number (443), or range (1000-2000)
+  - src_port / dst_port: ANY, number (443), or range (1000-2000)
 
-label: optional, SUSPICIOUS → logs at WARNING level
+  - label: optional, SUSPICIOUS → logs at WARNING level
 
-🖥️ Step 4 — Try the GUI
-bash
-Copy code
+### 🖥️ Step 4 — Try the GUI
+```bash
 sudo python firefish.py --iface wlan0 --gui
-Start → begin sniffing
+```
+  - Start → begin sniffing
 
-Load Rules… → custom YAML/JSON
+  - Load Rules… → custom YAML/JSON
 
-Enforce with iptables → activate blocking
+  - Enforce with iptables → activate blocking
 
-🚫 Step 5 — Switch to “Enforce” Mode
+### 🚫 Step 5 — Switch to “Enforce” Mode
 Block/allow traffic at OS level:
 
-bash
-Copy code
+```bash
+
 sudo python firefish.py --iface wlan0 --enforce
-What happens:
+```
+**What happens:**
 
-Creates chains: FICEF_INPUT, FICEF_OUTPUT
+  - Creates chains: FICEF_INPUT, FICEF_OUTPUT
 
-Compiles YAML rules into chains
+  - Compiles YAML rules into chains
 
-Adds catch-all rule from default_policy
+  - Adds catch-all rule from default_policy
 
-👉 Peek at installed rules:
+#### 👉 Peek at installed rules:
+```bash
+  sudo iptables -S FICEF_INPUT
+  sudo iptables -S FICEF_OUTPUT
+```
+### 🛡️ Step 6 — Beginner Rule Examples
+**1) Block outbound DNS**
 
-bash
-Copy code
-sudo iptables -S FICEF_INPUT
-sudo iptables -S FICEF_OUTPUT
-🛡️ Step 6 — Beginner Rule Examples
-1) Block outbound DNS
+```yaml
 
-yaml
-Copy code
 - action: DENY
   direction: OUT
   proto: UDP
   dst_port: 53
   label: SUSPICIOUS
-2) Block inbound SSH
+```
+**2) Block inbound SSH**
 
-yaml
-Copy code
+```yaml
 - action: DENY
   direction: IN
   proto: TCP
   dst_port: 22
-⚠️ Don’t do this on a remote SSH server (you’ll lock yourself out).
+```
+***⚠️ Don’t do this on a remote SSH server (you’ll lock yourself out).***
 
-3) Allow HTTPS to one IP only
+**3) Allow HTTPS to one IP only**
 
-yaml
-Copy code
+```yaml
+
 - action: ALLOW
   direction: OUT
   proto: TCP
@@ -160,30 +162,32 @@ Copy code
   direction: OUT
   proto: TCP
   dst_port: 443
-📂 Step 7 — Logs & Suspicious Tagging
-Normal entries → INFO
+```
 
-Rules with label: SUSPICIOUS → log at WARNING
+### 📂 Step 7 — Logs & Suspicious Tagging
+  - Normal entries → INFO
 
-Log file: firefish.log
+  - Rules with label: SUSPICIOUS → log at WARNING
+
+  - Log file: firefish.log
 
 Live view:
 
-bash
-Copy code
+```bash
 tail -f firefish.log
-🆘 Step 8 — Safe Recovery & Pitfalls
-If network breaks → open GUI and uncheck Enforce, or reboot.
+```
+### 🆘 Step 8 — Safe Recovery & Pitfalls
+  - If network breaks → open GUI and uncheck Enforce, or reboot.
 
-Safer on a laptop than remote VM.
+  - Safer on a laptop than remote VM.
 
-Root is needed for sniffing and iptables.
+  - Root is needed for sniffing and iptables.
 
-If no traffic appears → double-check --iface.
+  - If no traffic appears → double-check --iface.
 
-🛠️ Handy Commands Cheat Sheet
-bash
-Copy code
+## 🛠️ Handy Commands Cheat Sheet
+```bash
+
 # Install deps
 sudo pip install scapy pyyaml
 
@@ -202,9 +206,11 @@ tail -f firefish.log
 # Peek at Firefish iptables chains
 sudo iptables -S FICEF_INPUT
 sudo iptables -S FICEF_OUTPUT
-🚫 What Firefish is NOT
-Not an enterprise firewall → personal/educational use only.
+```
 
-Not a VPN or IDS (though suspicious tagging helps spot weird traffic).
+### 🚫 What Firefish is NOT
+  - Not an enterprise firewall → personal/educational use only.
 
-Not for Windows/macOS enforcement → Linux only.
+  - Not a VPN or IDS (though suspicious tagging helps spot weird traffic).
+
+  - Not for Windows/macOS enforcement → Linux only.
